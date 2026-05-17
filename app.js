@@ -17,28 +17,6 @@ const SHEETDB_URL = 'https://sheetdb.io/api/v1/YOUR_API_ID';
 */
 const SHEETDB_URL = 'https://sheetdb.io/api/v1/en3lcxkoq0btl';
 
-// --- MOCK DATABASE STATE (For demonstration without API keys) ---
-let localOpportunities = [
-    {
-        id: '1',
-        title: 'Frontend Developer Intern',
-        category: 'internship',
-        deadline: '2026-06-30',
-        link: 'https://example.com/apply1',
-        description: 'Join our energetic startup working on cutting-edge Web3 interfaces.',
-        createdAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
-    },
-    {
-        id: '2',
-        title: 'Global Cyber Hackathon',
-        category: 'hackathon',
-        deadline: '2026-05-20', // Very soon
-        link: 'https://example.com/hack',
-        description: '48 hours to build the future of cybersecurity. $50k prize pool.',
-        createdAt: new Date().toISOString()
-    }
-];
-
 // --- APP STATE ---
 let currentOpportunities = [];
 
@@ -77,7 +55,6 @@ async function initApp() {
 
 // 1. Read Data
 async function fetchOpportunitiesFromDB() {
-    
     // SHEETDB IMPLEMENTATION:
     try {
         const response = await fetch(SHEETDB_URL);
@@ -87,17 +64,10 @@ async function fetchOpportunitiesFromDB() {
         console.error("Error fetching data:", error);
         return [];
     }
-    
-    
-    // MOCK IMPLEMENTATION: Simulate network delay
-    return new Promise((resolve) => {
-        setTimeout(() => resolve([...localOpportunities]), 600);
-    });
 }
 
 // 2. Write Data
 async function addOpportunityToDB(oppData) {
-    
     // SHEETDB IMPLEMENTATION:
     const newRecord = {
         id: Math.random().toString(36).substr(2, 9),
@@ -118,55 +88,48 @@ async function addOpportunityToDB(oppData) {
     
     if (!response.ok) throw new Error("Failed to save to Google Sheet");
     return newRecord;
-    
-   
-    // MOCK IMPLEMENTATION:
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const newOpp = {
-                id: Math.random().toString(36).substr(2, 9),
-                ...oppData,
-                createdAt: new Date().toISOString()
-            };
-            localOpportunities.push(newOpp);
-            resolve(newOpp);
-        }, 500);
-    });
 }
 
 // 3. Update Data
 async function updateOpportunityInDB(id, updatedData) {
-    /*
     // SHEETDB IMPLEMENTATION:
-    const response = await fetch(`${SHEETDB_URL}/id/${id}`, {
-        method: 'PUT',
+    // If PUT doesn't work well, we implement Update by Deleting and Re-adding
+    
+    // First, delete the old record
+    const delResponse = await fetch(`${SHEETDB_URL}/id/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    });
+    if (!delResponse.ok) throw new Error("Failed to delete old record during update");
+
+    // Then, create a new record keeping the SAME id and creation date if possible
+    const currentOpp = currentOpportunities.find(o => o.id === id);
+    const newRecord = {
+        id: id,
+        ...updatedData,
+        createdAt: currentOpp ? currentOpp.createdAt : new Date().toISOString()
+    };
+
+    const addResponse = await fetch(SHEETDB_URL, {
+        method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            data: updatedData
+            data: [newRecord]
         })
     });
-    if (!response.ok) throw new Error("Failed to update in Google Sheet");
-    return updatedData;
-    */
+    if (!addResponse.ok) throw new Error("Failed to add updated record");
     
-    // MOCK IMPLEMENTATION:
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const index = localOpportunities.findIndex(opp => opp.id === id);
-            if (index !== -1) {
-                localOpportunities[index] = { ...localOpportunities[index], ...updatedData };
-            }
-            resolve();
-        }, 300);
-    });
+    return newRecord;
 }
 
 // 4. Delete Data
 async function deleteOpportunityFromDB(id) {
-    /*
     // SHEETDB IMPLEMENTATION:
     const response = await fetch(`${SHEETDB_URL}/id/${id}`, {
         method: 'DELETE',
@@ -176,15 +139,6 @@ async function deleteOpportunityFromDB(id) {
         }
     });
     if (!response.ok) throw new Error("Failed to delete from Google Sheet");
-    */
-    
-    // MOCK IMPLEMENTATION:
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            localOpportunities = localOpportunities.filter(opp => opp.id !== id);
-            resolve();
-        }, 300);
-    });
 }
 
 // --- UI RENDERING ---
@@ -196,7 +150,7 @@ function renderGrid() {
     if (category !== 'all') {
         filtered = filtered.filter(opp => opp.category === category);
     }
-    
+
     // 2. Apply Sort
     const sortVal = elements.sortOpps.value; // e.g. 'deadline-asc'
     filtered.sort((a, b) => {
@@ -218,21 +172,21 @@ function renderGrid() {
 
 function createCardHTML(opp) {
     const today = new Date();
-    const deadlineDate = new Date(opp.deadline);
-    const timeDiff = deadlineDate - today;
-    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    const deadlineDate = new Date(opp.deadline + 'T23:59:59');
+    const timeDiffMs = deadlineDate.getTime() - today.getTime();
     
-    let deadlineStr = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(deadlineDate);
+    let daysLeft = Math.floor(timeDiffMs / (1000 * 60 * 60 * 24));
+    
+    const formattedDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(deadlineDate);
+    let deadlineStr = '';
     let isUrgent = false;
 
-    if (daysLeft < 0) {
+    if (timeDiffMs < 0) {
         deadlineStr = "Past due";
         isUrgent = true;
-    } else if (daysLeft <= 7) {
-        deadlineStr = `${daysLeft} days left (${deadlineStr})`;
-        isUrgent = true;
     } else {
-        deadlineStr = `Closes ${deadlineStr}`;
+        deadlineStr = `Closes ${formattedDate}`;
+        if (daysLeft <= 7) isUrgent = true;
     }
 
     return `
@@ -247,7 +201,7 @@ function createCardHTML(opp) {
                 <button class="btn-icon btn-delete" data-id="${opp.id}">🗑 Delete</button>
             </div>
             <div class="card-footer">
-                <span class="deadline ${isUrgent ? 'urgent' : ''}">
+                <span class="deadline ${isUrgent ? 'urgent' : ''}" title="${formattedDate}">
                     ⏱ ${deadlineStr}
                 </span>
                 <a href="${escapeHTML(opp.link)}" target="_blank" rel="noopener noreferrer" class="card-link">
