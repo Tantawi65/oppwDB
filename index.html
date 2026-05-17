@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opp-Hub | Discover & Share Opportunities</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation / Header -->
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">
+                <span class="logo-icon">✨</span>
+                <h1>Opp<span class="text-neon">Hub</span></h1>
+            </div>
+            <button id="addBtn" class="btn btn-primary">
+                + Add Opportunity
+            </button>
+        </div>
+    </header>
+
+    <!-- Controls: Filter & Sort -->
+    <section class="controls">
+        <div class="container controls-content">
+            <div class="filter-group">
+                <label for="filterCategory">Filter by Category:</label>
+                <select id="filterCategory" class="select-input">
+                    <option value="all">All Categories</option>
+                    <option value="job">Jobs</option>
+                    <option value="internship">Internships</option>
+                    <option value="hackathon">Hackathons</option>
+                    <option value="scholarship">Scholarships</option>
+                    <option value="volunteer">Volunteer</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="sort-group">
+                <label for="sortOpps">Sort by:</label>
+                <select id="sortOpps" class="select-input">
+                    <option value="deadline-asc">Deadline (Soonest)</option>
+                    <option value="deadline-desc">Deadline (Furthest)</option>
+                    <option value="added-desc">Date Added (Newest)</option>
+                    <option value="added-asc">Date Added (Oldest)</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Grid -->
+    <main class="container">
+        <div id="opportunitiesGrid" class="grid">
+            <!-- Cards will be injected here via JavaScript -->
+            <div class="loading-state">Loading opportunities...</div>
+        </div>
+    </main>
+
+    <!-- Add Opportunity Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Share an Opportunity</h2>
+                <button id="closeModal" class="btn-close">&times;</button>
+            </div>
+            <form id="addForm" class="add-form">
+                <div class="form-group">
+                    <label for="title">Title *</label>
+                    <input type="text" id="title" required placeholder="e.g. Summer Software Engineering Intern">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" required>
+                            <option value="">Select a category</option>
+                            <option value="job">Job</option>
+                            <option value="internship">Internship</option>
+                            <option value="hackathon">Hackathon</option>
+                            <option value="scholarship">Scholarship</option>
+                            <option value="volunteer">Volunteer</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="deadline">Deadline *</label>
+                        <input type="date" id="deadline" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="link">Application Link (URL) *</label>
+                    <input type="url" id="link" required placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label for="description">Short Description *</label>
+                    <textarea id="description" rows="4" required placeholder="What makes this opportunity great?"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="submitBtn">Submit Opportunity</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Opportunity Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Opportunity</h2>
+                <button id="closeEditModal" class="btn-close">&times;</button>
+            </div>
+            <form id="editForm" class="add-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label for="edit-title">Title *</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-category">Category *</label>
+                        <select id="edit-category" required>
+                            <option value="job">Job</option>
+                            <option value="internship">Internship</option>
+                            <option value="hackathon">Hackathon</option>
+                            <option value="scholarship">Scholarship</option>
+                            <option value="volunteer">Volunteer</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-deadline">Deadline *</label>
+                        <input type="date" id="edit-deadline" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-link">Application Link (URL) *</label>
+                    <input type="url" id="edit-link" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-description">Short Description *</label>
+                    <textarea id="edit-description" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="updateBtn">Update Opportunity</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Modular v9) included as module in app.js -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
