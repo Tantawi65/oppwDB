@@ -72,6 +72,7 @@ async function addOpportunityToDB(oppData) {
     const newRecord = {
         id: Math.random().toString(36).substr(2, 9),
         ...oppData,
+        applied: false,
         createdAt: new Date().toISOString()
     };
     
@@ -110,6 +111,7 @@ async function updateOpportunityInDB(id, updatedData) {
     const newRecord = {
         id: id,
         ...updatedData,
+        applied: currentOpp ? currentOpp.applied : false,
         createdAt: currentOpp ? currentOpp.createdAt : new Date().toISOString()
     };
 
@@ -188,24 +190,32 @@ function createCardHTML(opp) {
         deadlineStr = `Closes ${formattedDate}`;
         if (daysLeft <= 7) isUrgent = true;
     }
+    
+    // Parse applied status
+    const isApplied = (opp.applied === true || opp.applied === 'true' || opp.applied === 'TRUE');
 
     return `
-        <article class="card">
+        <article class="card ${isApplied ? 'is-applied' : ''}">
             <div class="card-header">
                 <span class="badge ${opp.category}">${opp.category}</span>
+                <div class="admin-actions">
+                    <button class="btn-admin edit" data-id="${opp.id}" title="Edit">✎</button>
+                    <button class="btn-admin delete" data-id="${opp.id}" title="Delete">✕</button>
+                </div>
             </div>
             <h3 class="card-title">${escapeHTML(opp.title)}</h3>
             <p class="card-desc">${escapeHTML(opp.description)}</p>
-            <div class="card-actions">
-                <button class="btn-icon btn-edit" data-id="${opp.id}">✎ Edit</button>
-                <button class="btn-icon btn-delete" data-id="${opp.id}">🗑 Delete</button>
-            </div>
             <div class="card-footer">
-                <span class="deadline ${isUrgent ? 'urgent' : ''}" title="${formattedDate}">
-                    ⏱ ${deadlineStr}
-                </span>
-                <a href="${escapeHTML(opp.link)}" target="_blank" rel="noopener noreferrer" class="card-link">
-                    View & Apply ↗
+                <div class="footer-info">
+                    <span class="deadline ${isUrgent && !isApplied ? 'urgent' : ''}" title="${formattedDate}">
+                        ⏱ ${deadlineStr}
+                    </span>
+                    <button class="btn-applied-pill ${isApplied ? 'active' : ''}" data-id="${opp.id}">
+                        <span class="check-icon">✓</span> ${isApplied ? 'Applied' : 'Mark Applied'}
+                    </button>
+                </div>
+                <a href="${escapeHTML(opp.link)}" target="_blank" rel="noopener noreferrer" class="card-link-btn">
+                    Apply ↗
                 </a>
             </div>
         </article>
@@ -315,10 +325,36 @@ function setupEventListeners() {
         }
     });
 
-    // Handle Edit and Delete button clicks (Event Delegation)
+    // Handle Edit, Delete, and Applied button clicks (Event Delegation)
     elements.grid.addEventListener('click', async (e) => {
-        const editBtn = e.target.closest('.btn-edit');
-        const deleteBtn = e.target.closest('.btn-delete');
+        const editBtn = e.target.closest('.btn-admin.edit');
+        const deleteBtn = e.target.closest('.btn-admin.delete');
+        const appliedBtn = e.target.closest('.btn-applied-pill');
+
+        if (appliedBtn) {
+            const id = appliedBtn.dataset.id;
+            const oppIndex = currentOpportunities.findIndex(o => o.id === id);
+            if (oppIndex > -1) {
+                const opp = currentOpportunities[oppIndex];
+                const isCurrentlyApplied = (opp.applied === true || opp.applied === 'true' || opp.applied === 'TRUE');
+                const newAppliedState = !isCurrentlyApplied;
+                
+                // Optimistic UI Update
+                opp.applied = newAppliedState;
+                renderGrid(); // Re-render to update card opacity and UI fully
+                
+                // Backend Update
+                try {
+                    await updateOpportunityInDB(id, opp);
+                } catch (err) {
+                    console.error("Failed to update status", err);
+                    alert("Failed to save applied status.");
+                    // Revert if failed
+                    opp.applied = isCurrentlyApplied;
+                    renderGrid();
+                }
+            }
+        }
 
         if (editBtn) {
             const id = editBtn.dataset.id;
