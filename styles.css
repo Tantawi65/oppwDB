@@ -185,11 +185,54 @@ body {
     opacity: 1;
 }
 
+.card.is-applied {
+    background: rgba(20, 20, 30, 0.6);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.card.is-applied::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+    opacity: 0.5;
+}
+
+.card.is-applied:hover::before {
+    opacity: 1;
+}
+
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 15px;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-admin {
+    background: transparent;
+    color: var(--text-secondary);
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-admin.edit:hover {
+    color: var(--neon-blue);
+    background: rgba(0, 240, 255, 0.1);
+}
+
+.btn-admin.delete:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .badge {
@@ -226,44 +269,53 @@ body {
 .card-footer {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     border-top: 1px solid var(--border-color);
     padding-top: 15px;
     margin-top: auto;
 }
 
-.card-actions {
+.footer-info {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.btn-icon {
-    font-size: 0.8rem;
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
+.btn-applied-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: 600;
+    cursor: pointer;
     transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
 }
 
-.btn-edit {
+.btn-applied-pill:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-}
-.btn-edit:hover {
-    background: rgba(0, 240, 255, 0.2);
-    color: var(--neon-blue);
+    color: white;
 }
 
-.btn-delete {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+.btn-applied-pill.active {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+    color: #10b981;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
 }
-.btn-delete:hover {
-    background: #ef4444;
-    color: white;
+
+.check-icon {
+    font-size: 0.9rem;
+    opacity: 0.4;
+}
+
+.btn-applied-pill.active .check-icon {
+    opacity: 1;
 }
 
 .deadline {
@@ -279,20 +331,23 @@ body {
     font-weight: 600;
 }
 
-.card-link {
+.card-link-btn {
+    background: rgba(0, 240, 255, 0.1);
     color: var(--neon-blue);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 8px;
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 5px;
     transition: var(--transition);
+    white-space: nowrap;
 }
 
-.card-link:hover {
-    color: #fff;
-    text-shadow: 0 0 8px rgba(0, 240, 255, 0.8);
+.card-link-btn:hover {
+    background: var(--neon-blue);
+    color: var(--bg-main);
+    box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
 }
 
 /* Modal */
