@@ -25,6 +25,7 @@ const elements = {
     grid: document.getElementById('opportunitiesGrid'),
     filterCategory: document.getElementById('filterCategory'),
     sortOpps: document.getElementById('sortOpps'),
+    showAvailableOnly: document.getElementById('showAvailableOnly'),
     addBtn: document.getElementById('addBtn'),
     modal: document.getElementById('addModal'),
     closeModal: document.getElementById('closeModal'),
@@ -152,6 +153,17 @@ function renderGrid() {
     if (category !== 'all') {
         filtered = filtered.filter(opp => opp.category === category);
     }
+    
+    // 1.5. Apply Available Only Filter
+    if (elements.showAvailableOnly.checked) {
+        const today = new Date();
+        filtered = filtered.filter(opp => {
+            const isApplied = (opp.applied === true || opp.applied === 'true' || opp.applied === 'TRUE');
+            const deadlineDate = new Date(opp.deadline + 'T23:59:59');
+            const hasPassed = deadlineDate.getTime() - today.getTime() < 0;
+            return !isApplied && !hasPassed;
+        });
+    }
 
     // 2. Apply Sort
     const sortVal = elements.sortOpps.value; // e.g. 'deadline-asc'
@@ -227,6 +239,7 @@ function setupEventListeners() {
     // Controls
     elements.filterCategory.addEventListener('change', renderGrid);
     elements.sortOpps.addEventListener('change', renderGrid);
+    elements.showAvailableOnly.addEventListener('change', renderGrid);
 
     // Modal behavior
     elements.addBtn.addEventListener('click', () => {
