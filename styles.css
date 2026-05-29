@@ -127,6 +127,22 @@ body {
     font-weight: 500;
 }
 
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
+    cursor: pointer;
+    color: var(--text-primary) !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+    accent-color: var(--neon-blue);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
 .select-input, .add-form select, .add-form input, .add-form textarea {
     background: var(--bg-main);
     color: var(--text-primary);
